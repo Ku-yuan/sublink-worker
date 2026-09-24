@@ -1,0 +1,30 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    # 每天 UTC 时间 0:00（北京时间 8:00）自动运行一次
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 支持手动点击按钮触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Sync upstream changes
+        id: sync
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+        with:
+          upstream_sync_repo: 7Sageer/sublink-worker
+          upstream_sync_branch: main
+          target_sync_branch: main
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+          test_mode: false
+
+      - name: Check output
+        if: failure()
+        run: |
+          echo "[Error] Sync failed, usually due to merge conflicts."
+          exit 1
